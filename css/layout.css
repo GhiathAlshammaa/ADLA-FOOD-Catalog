@@ -1,0 +1,11 @@
+.app-shell { inline-size: min(100%, var(--content-width)); margin-inline: auto; }
+.top { padding: var(--space-4) var(--page-gutter); }
+.brand-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+.search-wrap { position: relative; margin-block-start: var(--space-4); min-inline-size: 0; }
+.service-strip { display: grid; grid-template-columns: repeat(3, 1fr); margin-inline: var(--page-gutter); border-block: 1px solid var(--border); }
+.main { padding: var(--space-5) var(--page-gutter) calc(160px + env(safe-area-inset-bottom)); }
+.categories { display: flex; gap: var(--space-2); overflow-x: auto; scrollbar-width: none; padding: var(--space-1); margin-inline: -.25rem; }
+.categories::-webkit-scrollbar, .variants::-webkit-scrollbar { display: none; }
+.results-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-block: var(--space-5) var(--space-3); }
+.products { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--card-gap); }
+.cart-bar { position: fixed; z-index: 10; inset-block-end: calc(var(--space-3) + env(safe-area-inset-bottom)); inset-inline: var(--page-gutter); inline-size: auto; max-inline-size: var(--order-width); margin-inline: auto; display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }

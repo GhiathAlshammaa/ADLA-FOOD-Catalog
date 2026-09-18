@@ -1,0 +1,45 @@
+@media (min-width: 360px) { .products { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 600px) {
+  :root { --page-gutter: 1.5rem; --card-gap: 1rem; }
+  .top { position: relative; display: grid; grid-template-columns: 220px minmax(0, 1fr); align-items: center; gap: var(--space-5); padding-block: var(--space-4); padding-inline-end: calc(var(--page-gutter) + 64px); }
+  .header-cart { position: absolute; inset-inline-end: var(--page-gutter); }
+  .search-wrap { margin-block-start: 0; }
+  .service-strip { display: flex; justify-content: center; gap: var(--space-6); }
+  .service-strip span { font-size: var(--text-xs); gap: var(--space-2); min-block-size: 34px; }
+  .main { padding-block-start: var(--space-4); }
+  .section-title { margin-block-end: var(--space-1); }
+  .results-head { margin-block: var(--space-4) var(--space-3); }
+  .products { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .product { grid-column: span 2; padding: var(--space-3); }
+  .visual { block-size: 140px; }
+  .cart-bar { max-inline-size: none; }
+}
+@media (min-width: 960px) {
+  .top { grid-template-columns: 280px minmax(0, 1fr); }
+  .search-wrap { max-inline-size: 660px; inline-size: 100%; justify-self: end; }
+  .service-strip { justify-content: flex-start; }
+  .main { padding-block-end: var(--space-6); }
+  .cart-bar { position: sticky; inset-inline: auto; inset-block-end: var(--space-4); margin-block-start: var(--space-4); max-inline-size: 800px; margin-inline: 0; inline-size: 100%; border-radius: var(--radius-md); box-shadow: var(--shadow-card); background: var(--accent); }
+  .order-btn { min-inline-size: 210px; }
+}
+@media (min-width: 720px) {
+  .price-row { flex-wrap: nowrap; gap: var(--space-2); padding-block-start: var(--space-3); margin-block-start: var(--space-2); border-block-start: 1px solid var(--border); }
+  .price { flex: 1 1 0; min-inline-size: 0; }
+  .quantity-control { flex: 0 0 128px; inline-size: 128px; }
+  .visual { block-size: 148px; }
+}
+@media (min-width: 1200px) {
+  .products { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .product { grid-column: auto; }
+}
+@media (max-width: 359px) {
+  .cart-bar { flex-wrap: wrap; }
+  .order-btn { inline-size: 100%; }
+  .quantity-control { max-inline-size: 156px; }
+}
+
+@media (min-width: 600px) and (max-width: 1199px) {
+  /* Center a short last row without widening its cards; works after filtering. */
+  .product:nth-child(3n + 1 of :not([hidden])):nth-last-child(2 of :not([hidden])) { grid-column: 2 / span 2; }
+  .product:nth-child(3n + 1 of :not([hidden])):nth-last-child(1 of :not([hidden])) { grid-column: 3 / span 2; }
+}
