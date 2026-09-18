@@ -4,7 +4,8 @@ Arabic-first wholesale catalog in plain HTML, CSS and JavaScript. No dependencie
 
 ## File guide
 
-- `index.html`: five prototype products; each variant owns its size, pack, SKU, price and optional image path.
+- `index.html`: application shell and basket markup.
+- `data/catalog-data.js`: the editable source for settings, labels, categories, products and variants. Loaded before `js/app.js`.
 - `css/tokens.css`: light-theme design tokens.
 - `css/base.css`: resets, focus, accessibility and reduced motion.
 - `css/layout.css`: application shell and mobile layout.
@@ -16,7 +17,7 @@ Arabic-first wholesale catalog in plain HTML, CSS and JavaScript. No dependencie
 
 ## Adding product photography
 
-All current product variants intentionally have an empty `data-image=""`. No legacy product photographs are referenced or displayed; their files remain on disk for manual cleanup.
+All current product variants intentionally have an empty `image: ""`. No legacy product photographs are referenced or displayed.
 
 Upload one clean standalone package image per variant into the appropriate folder:
 
@@ -32,10 +33,10 @@ A `pickled-peppers/` folder is also ready. Empty `.gitkeep` files intentionally 
 
 Use lowercase English slugs, hyphens, and a size with unit; no spaces. Append the lowercase SKU only to resolve a filename collision, for example `grape-leaves-660g-p1-07.webp`.
 
-In `index.html`, change only the matching variant button's attribute:
+In `data/catalog-data.js`, change the matching variant's image field:
 
-```html
- data-image="assets/images/products/grape-leaves/grape-leaves-660g.webp"
+```js
+image: "assets/images/products/grape-leaves/grape-leaves-660g.webp"
 ```
 
 Do not change CSS or the initial product `<img>`. `updateProductImage()` in `js/app.js` handles both the initial selection and later variant switches. Empty, absent or failed paths show the reusable HTML/CSS package icon and Arabic label “صورة المنتج غير متوفرة”. The placeholder remains visible while a future image loads. Both states share the same fixed-height visual area, with contained, centered photography and consistent padding. There is no cropping, image-specific CSS or replacement photography.
@@ -50,7 +51,9 @@ Do not change CSS or the initial product `<img>`. `updateProductImage()` in `js/
 
 ## Behavior and scope
 
-Variant controls and quantity/cart semantics remain unchanged. Quantity belongs to a product card, so changing its variant applies the new price to that card's quantity. Integers are limited to 0–999; committing zero restores the add control. Cart state is not persisted. Search covers Arabic product names, existing aliases and every variant SKU, combined with the selected category. Category order stays fixed.
+Variant controls and quantity/cart semantics remain unchanged. Each variant has its own quantity within its product, including when two products share a SKU. The card and basket use the same quantity state. Integers are limited to 0–999; committing zero restores the add control. Cart state is not persisted. Search covers Arabic product names, optional `searchTerms` and every variant SKU, combined with the selected category. Categories follow their `order` values.
+
+Edit names, categories, sizes, units per carton, prices, availability and image paths in `data/catalog-data.js`. Keep product IDs stable and give each product at least one variant. Set product or variant `available` to `false` to prevent adding it; omitted availability means available. `settings.unitNames` supplies long unit labels for pack information. `featured` is editorial metadata; the existing grid displays all products. `settings.labels` controls visible catalog labels; technical accessibility instructions remain in the application. `settings.whatsappNumber` is deliberately blank and does not activate sending.
 
 WhatsApp sending remains an explicitly labelled prototype action without a configured recipient. Next.js, Sanity, localization, persistence and real order delivery remain deferred.
 

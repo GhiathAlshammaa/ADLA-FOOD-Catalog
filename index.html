@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<title>ADLA FOOD — كتالوج الطلب المباشر</title>
+<title></title>
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/layout.css">
@@ -19,8 +19,8 @@
     <header class="top">
       <div class="brand-row">
         <div class="logo">
-          <div class="logo-mark"><img src="assets/logo/adla-food.png" alt="شعار ADLA FOOD"></div>
-          <div><strong>ADLA FOOD</strong><small>كتالوغ الطلب المباشر</small></div>
+          <div class="logo-mark"><img  alt="شعار ADLA FOOD"></div>
+          <div><strong></strong><small></small></div>
         </div>
         <button class="header-cart" type="button" aria-label="فتح سلة الطلب" aria-controls="basket" aria-haspopup="dialog">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 10 4-7m10 7-4-7M3 10h18l-2 10H5L3 10Z"/><path d="M9 14v3m6-3v3"/></svg><b id="cart-count">0</b>
@@ -28,100 +28,35 @@
       </div>
       <div class="search-wrap">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
-        <input id="product-search" class="search" type="search" placeholder="ابحث باسم المنتج أو الكود" aria-label="البحث في المنتجات">
+        <input id="product-search" class="search" type="search" placeholder="" aria-label="البحث في المنتجات">
       </div>
     </header>
 
     <div class="service-strip" aria-label="مزايا الطلب">
-      <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 5v10l9 4V13m9-5v5M7 6l9 5m0 7 2 2 4-5"/></svg> أسعار جملة</span>
-      <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h11v12H3V5Zm11 5h4l3 4v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg> توصيل سريع</span>
-      <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a9 9 0 0 1-13 8L3 21l1.5-5A9 9 0 1 1 21 11.5Z"/><path d="M8 9h8m-8 4h5"/></svg> طلب واتساب</span>
+      <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 5v10l9 4V13m9-5v5M7 6l9 5m0 7 2 2 4-5"/></svg><span class="service-label"></span></span>
+      <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h11v12H3V5Zm11 5h4l3 4v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg><span class="service-label"></span></span>
+      <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a9 9 0 0 1-13 8L3 21l1.5-5A9 9 0 1 1 21 11.5Z"/><path d="M8 9h8m-8 4h5"/></svg><span class="service-label"></span></span>
     </div>
 
     <main class="main">
-      <h1 class="section-title">اختر الفئة</h1>
+      <h1 class="section-title" data-label="chooseCategory"></h1>
       <div class="category-nav">
         <button class="category-arrow category-arrow-right" type="button" aria-label="عرض الفئات السابقة" aria-controls="category-list" disabled><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
       <div class="categories" id="category-list" role="group" aria-label="فئات المنتجات">
-        <button class="category" type="button" data-category="all" aria-pressed="true">الكل</button>
-        <button class="category" type="button" data-category="pickles" aria-pressed="false">مخللات</button>
-        <button class="category" type="button" data-category="sauces" aria-pressed="false">صلصات</button>
-        <button class="category" type="button" data-category="dry" aria-pressed="false">مواد جافة</button>
-        <button class="category" type="button" data-category="seeds" aria-pressed="false">مكسرات وبذور</button>
-        <button class="category" type="button" data-category="olives" aria-pressed="false">زيتون</button>
-        <button class="category" type="button" data-category="rice" aria-pressed="false">أرز وحبوب</button>
-        <button class="category" type="button" data-category="legumes" aria-pressed="false">بقوليات</button>
-        <button class="category" type="button" data-category="canned" aria-pressed="false">معلبات</button>
-        <button class="category" type="button" data-category="sweets" aria-pressed="false">حلويات</button>
-        <button class="category" type="button" data-category="drinks" aria-pressed="false">مشروبات</button>
       </div>
         <button class="category-arrow category-arrow-left" type="button" aria-label="عرض الفئات التالية" aria-controls="category-list" disabled><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
       </div>
 
-      <div class="results-head"><h2>المنتجات الأكثر طلبًا</h2><span id="result-count" role="status">5 منتجات</span></div>
+      <div class="results-head"><h2 data-label="featuredTitle"></h2><span id="result-count" role="status"></span></div>
       <div class="products" id="product-grid" tabindex="-1">
-        <article class="product" data-category="pickles" data-search="ورق عنب p1-01">
-          <div class="visual"><span class="stock">متوفر</span><img class="product-image" alt="" hidden><div class="image-placeholder" role="img" aria-label="صورة المنتج غير متوفرة"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m24 6 16 9-16 9-16-9 16-9Zm-16 9v18l16 9 16-9V15M24 24v18M16 10l16 9"/></svg><span>صورة المنتج غير متوفرة</span></div></div>
-          <h3>ورق عنب</h3>
-          <div class="variants" role="group" aria-label="اختر حجم ورق العنب">
-            <button class="variant" type="button" aria-pressed="true" data-size="660غ" data-pack="12 × 660 غرام" data-code="P1-07" data-price="18" data-image="">660غ</button>
-            <button class="variant" type="button" aria-pressed="false" data-size="1350غ" data-pack="6 × 1350 غرام" data-code="P1-03" data-price="22" data-image="">1350غ</button>
-            <button class="variant" type="button" aria-pressed="false" data-size="2800غ" data-pack="4 × 2800 غرام" data-code="P1-01" data-price="26" data-image="">2800غ</button>
-          </div>
-          <div class="meta"><span class="pack">12 × 660 غرام</span><br>الكود <span class="sku">P1-07</span></div>
-          <div class="price-row"><div class="price"><strong>€18.00</strong><small>سعر الكرتونة</small></div><button class="add" type="button" aria-label="إضافة ورق عنب">+</button></div>
-        </article>
-        <article class="product" data-category="pickles" data-search="مكدوس p3-09">
-          <div class="visual"><span class="stock">متوفر</span><img class="product-image" alt="" hidden><div class="image-placeholder" role="img" aria-label="صورة المنتج غير متوفرة"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m24 6 16 9-16 9-16-9 16-9Zm-16 9v18l16 9 16-9V15M24 24v18M16 10l16 9"/></svg><span>صورة المنتج غير متوفرة</span></div></div>
-          <h3>مكدوس</h3>
-          <div class="variants" role="group" aria-label="اختر حجم المكدوس">
-            <button class="variant" type="button" aria-pressed="true" data-size="660غ" data-pack="12 × 660 غرام" data-code="P3-09" data-price="50" data-image="">660غ</button>
-            <button class="variant" type="button" aria-pressed="false" data-size="1000غ" data-pack="12 × 1000 غرام" data-code="P3-10" data-price="72" data-image="">1000غ</button>
-            <button class="variant" type="button" aria-pressed="false" data-size="2800غ" data-pack="4 × 2800 غرام" data-code="P3-11" data-price="64" data-image="">2800غ</button>
-          </div>
-          <div class="meta"><span class="pack">12 × 660 غرام</span><br>الكود <span class="sku">P3-09</span></div>
-          <div class="price-row"><div class="price"><strong>€50.00</strong><small>سعر الكرتونة</small></div><button class="add" type="button" aria-label="إضافة مكدوس">+</button></div>
-        </article>
-        <article class="product" data-category="sauces" data-search="دبس فليفلة p2-01">
-          <div class="visual"><span class="stock">متوفر</span><img class="product-image" alt="" hidden><div class="image-placeholder" role="img" aria-label="صورة المنتج غير متوفرة"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m24 6 16 9-16 9-16-9 16-9Zm-16 9v18l16 9 16-9V15M24 24v18M16 10l16 9"/></svg><span>صورة المنتج غير متوفرة</span></div></div>
-          <h3>دبس فليفلة</h3>
-          <div class="variants" role="group" aria-label="اختر حجم دبس الفليفلة">
-            <button class="variant" type="button" aria-pressed="true" data-size="660غ" data-pack="12 × 660 غرام" data-code="P2-01" data-price="24" data-image="">660غ</button>
-            <button class="variant" type="button" aria-pressed="false" data-size="1000غ" data-pack="12 × 1000 غرام" data-code="P2-02" data-price="33" data-image="">1000غ</button>
-          </div>
-          <div class="meta"><span class="pack">12 × 660 غرام</span><br>الكود <span class="sku">P2-01</span></div>
-          <div class="price-row"><div class="price"><strong>€24.00</strong><small>سعر الكرتونة</small></div><button class="add" type="button" aria-label="إضافة دبس فليفلة">+</button></div>
-        </article>
-        <article class="product" data-category="sauces" data-search="طحينة p3-04">
-          <div class="visual"><span class="stock">متوفر</span><img class="product-image" alt="" hidden><div class="image-placeholder" role="img" aria-label="صورة المنتج غير متوفرة"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m24 6 16 9-16 9-16-9 16-9Zm-16 9v18l16 9 16-9V15M24 24v18M16 10l16 9"/></svg><span>صورة المنتج غير متوفرة</span></div></div>
-          <h3>طحينة</h3>
-          <div class="variants" role="group" aria-label="اختر حجم الطحينة">
-            <button class="variant" type="button" aria-pressed="true" data-size="350غ" data-pack="12 × 350 غرام" data-code="P3-04" data-price="32" data-image="">350غ</button>
-            <button class="variant" type="button" aria-pressed="false" data-size="700غ" data-pack="12 × 700 غرام" data-code="P3-05" data-price="50" data-image="">700غ</button>
-            <button class="variant" type="button" aria-pressed="false" data-size="1800غ" data-pack="6 × 1800 غرام" data-code="P3-08" data-price="58" data-image="">1800غ</button>
-          </div>
-          <div class="meta"><span class="pack">12 × 350 غرام</span><br>الكود <span class="sku">P3-04</span></div>
-          <div class="price-row"><div class="price"><strong>€32.00</strong><small>سعر الكرتونة</small></div><button class="add" type="button" aria-label="إضافة طحينة">+</button></div>
-        </article>
-        <article class="product" data-category="pickles" data-search="مخلل فليفلة فلفل p1-06">
-          <div class="visual"><span class="stock">متوفر</span><img class="product-image" alt="" hidden><div class="image-placeholder" role="img" aria-label="صورة المنتج غير متوفرة"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m24 6 16 9-16 9-16-9 16-9Zm-16 9v18l16 9 16-9V15M24 24v18M16 10l16 9"/></svg><span>صورة المنتج غير متوفرة</span></div></div>
-          <h3>مخلل فليفلة</h3>
-          <div class="variants" role="group" aria-label="اختر حجم مخلل الفليفلة">
-            <button class="variant" type="button" aria-pressed="true" data-size="660غ" data-pack="12 × 660 غرام" data-code="P1-06" data-price="18" data-image="">660غ</button>
-            <button class="variant" type="button" aria-pressed="false" data-size="1000غ" data-pack="12 × 1000 غرام" data-code="P1-07" data-price="30" data-image="">1000غ</button>
-            <button class="variant" type="button" aria-pressed="false" data-size="2800غ" data-pack="4 × 2800 غرام" data-code="P1-08" data-price="34" data-image="">2800غ</button>
-          </div>
-          <div class="meta"><span class="pack">12 × 660 غرام</span><br>الكود <span class="sku">P1-06</span></div>
-          <div class="price-row"><div class="price"><strong>€18.00</strong><small>سعر الكرتونة</small></div><button class="add" type="button" aria-label="إضافة مخلل فليفلة">+</button></div>
-        </article>
       </div>
-      <div class="empty" id="empty-state" hidden>لا توجد منتجات مطابقة</div>
+      <div class="empty" id="empty-state" hidden data-label="emptyResults"></div>
 
       <div class="cart-bar" id="cart-bar" hidden aria-label="ملخص الطلب">
-        <button class="cart-info basket-trigger" type="button" aria-label="مراجعة سلة الطلب" aria-controls="basket" aria-haspopup="dialog"><strong><span id="cart-items">0</span> كرتونة في الطلب</strong><small>الإجمالي: <span id="cart-total">€0.00</span></small></button>
-        <button class="order-btn" type="button"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M21 11.5a9 9 0 0 1-13 8L3 21l1.5-5A9 9 0 1 1 21 11.5Z"/><path d="M8 9h8m-8 4h5"/></svg> إرسال على واتساب</button>
+        <button class="cart-info basket-trigger" type="button" aria-label="مراجعة سلة الطلب" aria-controls="basket" aria-haspopup="dialog"><strong><span id="cart-items">0</span> <span data-label="cartonsInOrder"></span></strong><small><span data-label="total"></span>: <span id="cart-total"></span></small></button>
+        <button class="order-btn" type="button"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M21 11.5a9 9 0 0 1-13 8L3 21l1.5-5A9 9 0 1 1 21 11.5Z"/><path d="M8 9h8m-8 4h5"/></svg><span data-label="sendWhatsAppShort"></span></button>
       </div>
-    <p class="order-note" id="order-note" hidden>إرسال الطلب غير مفعّل في النسخة التجريبية. لم يتم إرسال أي طلب.</p>
+    <p class="order-note" id="order-note" hidden data-label="orderNote"></p>
       <p class="sr-only" id="cart-status" role="status" aria-atomic="true"></p>
     </main>
   </section>
@@ -129,23 +64,24 @@
 
 <dialog class="basket" id="basket" role="dialog" aria-modal="true" aria-labelledby="basket-title">
   <header class="basket-header">
-    <div><h2 id="basket-title">سلة الطلب</h2><p id="basket-count">0 كرتونة</p></div>
+    <div><h2 id="basket-title" data-label="basketTitle"></h2><p id="basket-count"></p></div>
     <button class="basket-close" type="button" aria-label="إغلاق سلة الطلب" autofocus>×</button>
   </header>
   <div class="basket-body">
     <div class="basket-empty" id="basket-empty">
       <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m24 6 16 9-16 9-16-9 16-9Zm-16 9v18l16 9 16-9V15M24 24v18M16 10l16 9"/></svg>
-      <h3>السلة فارغة</h3><p>أضف بعض المنتجات للبدء بالطلب</p>
+      <h3 data-label="emptyBasket"></h3><p data-label="emptyBasketHint"></p>
     </div>
     <div id="basket-items" role="list" aria-label="منتجات الطلب"></div>
   </div>
   <footer class="basket-footer">
-    <div class="basket-summary"><span id="basket-summary-count">0 كرتونة</span><strong>الإجمالي: <bdi id="basket-total">€0.00</bdi></strong></div>
-    <button class="order-btn basket-order" type="button" hidden>إرسال الطلب عبر واتساب</button>
-    <p class="order-note" id="basket-order-note" role="status" hidden>إرسال الطلب غير مفعّل في النسخة التجريبية. لم يتم إرسال أي طلب.</p>
+    <div class="basket-summary"><span id="basket-summary-count"></span><strong><span data-label="total"></span>: <bdi id="basket-total"></bdi></strong></div>
+    <button class="order-btn basket-order" type="button" hidden data-label="sendWhatsApp"></button>
+    <p class="order-note" id="basket-order-note" role="status" hidden data-label="orderNote"></p>
   </footer>
   <p class="sr-only" id="basket-status" role="status" aria-atomic="true"></p>
 </dialog>
+<script src="data/catalog-data.js" defer></script>
 <script src="js/app.js" defer></script>
 </body>
 </html>

@@ -1,6 +1,62 @@
 (() => {
   'use strict';
   const root = document.querySelector('#catalog-app');
+  const { settings, categories, products } = window.catalogData;
+  const labels = settings.labels;
+  const money = value => `${settings.currency}${value.toFixed(2)}`;
+  const escapeHtml = value => String(value).replace(/[&<>"']/g, character => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[character]);
+
+  function renderSettings() {
+    document.title = settings.pageTitle;
+    root.querySelector('.logo strong').textContent = settings.brandName;
+    root.querySelector('.logo small').textContent = settings.subtitle;
+    const logo = root.querySelector('.logo-mark img');
+    logo.src = settings.logo;
+    logo.alt = `شعار ${settings.brandName}`;
+    root.querySelector('.app-shell').setAttribute('aria-label', `كتالوغ ${settings.brandName}`);
+    root.querySelector('#product-search').placeholder = labels.searchPlaceholder;
+    document.querySelectorAll('[data-label]').forEach(element => {
+      element.textContent = labels[element.dataset.label];
+    });
+    const strip = root.querySelector('.service-strip');
+    const slots = [...strip.children];
+    strip.replaceChildren(...settings.serviceStrip.map((text, index) => {
+      const slot = slots[index] || document.createElement('span');
+      const label = slot.querySelector('.service-label');
+      if (label) label.textContent = ` ${text}`;
+      else slot.textContent = text;
+      return slot;
+    }));
+  }
+
+  function renderCategories() {
+    root.querySelector('.categories').innerHTML = [...categories]
+      .sort((a, b) => a.order - b.order)
+      .map(category => `<button class="category" type="button" data-category="${escapeHtml(category.id)}" aria-pressed="${category.id === 'all'}">${escapeHtml(category.name)}</button>`).join('');
+  }
+
+  function renderProducts() {
+    root.querySelector('#product-grid').innerHTML = products.map(product => `
+        <article class="product" data-product-id="${escapeHtml(product.id)}" data-category="${escapeHtml(product.category)}" data-search="${escapeHtml([product.name, ...(product.searchTerms || [])].join(' '))}">
+          <div class="visual"><span class="stock"></span><img class="product-image" alt="" hidden><div class="image-placeholder" role="img" aria-label="${escapeHtml(labels.imageUnavailable)}"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m24 6 16 9-16 9-16-9 16-9Zm-16 9v18l16 9 16-9V15M24 24v18M16 10l16 9"/></svg><span>${escapeHtml(labels.imageUnavailable)}</span></div></div>
+          <h3>${escapeHtml(product.name)}</h3>
+          <div class="variants" role="group" aria-label="اختر حجم ${escapeHtml(product.name)}">
+            ${product.variants.map((variant, index) => {
+              const size = `${variant.size.value}${variant.size.unit}`;
+              const pack = `${variant.unitsPerCarton} × ${variant.size.value} ${settings.unitNames[variant.size.unit] || variant.size.unit}`;
+              return `<button class="variant" type="button" aria-pressed="${index === 0}" data-size="${escapeHtml(size)}" data-pack="${escapeHtml(pack)}" data-code="${escapeHtml(variant.sku)}" data-price="${escapeHtml(variant.price)}" data-image="${escapeHtml(variant.image || '')}" data-available="${product.available !== false && variant.available !== false}">${escapeHtml(size)}</button>`;
+            }).join('\n')}
+          </div>
+          <div class="meta"><span class="pack"></span><br>${escapeHtml(labels.code)} <span class="sku"></span></div>
+          <div class="price-row"><div class="price"><strong></strong><small>${escapeHtml(labels.cartonPrice)}</small></div><button class="add" type="button">+</button></div>
+        </article>`).join('');
+  }
+
+  renderSettings();
+  renderCategories();
+  renderProducts();
   const cards = [...root.querySelectorAll('.product')];
   const search = root.querySelector('#product-search');
   const categoryButtons = [...root.querySelectorAll('.category')];
@@ -12,7 +68,6 @@
   let basketTrigger = null;
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   let selectedCategory = 'all';
-  const money = value => `€${value.toFixed(2)}`;
   const quantityForVariant = variant => quantities.get(variant) || 0;
   const quantityFor = card => quantityForVariant(selectedVariant(card));
   const selectedVariant = card => card.querySelector('.variant[aria-pressed="true"]');
@@ -29,8 +84,8 @@
     const overflowing = categoryStrip.scrollWidth > categoryNav.clientWidth + 1;
     categoryNav.classList.toggle('has-overflow', overflowing);
     const viewport = categoryStrip.getBoundingClientRect();
-    const first = categoryButtons[0].getBoundingClientRect();
-    const last = categoryButtons[categoryButtons.length - 1].getBoundingClientRect();
+    const first = categoryButtons[0]?.getBoundingClientRect() || viewport;
+    const last = categoryButtons[categoryButtons.length - 1]?.getBoundingClientRect() || viewport;
     // Physical edges work with RTL negative scrollLeft and with LTR alike.
     const hasLeft = overflowing && Math.min(first.left, last.left) < viewport.left - 1;
     const hasRight = overflowing && Math.max(first.right, last.right) > viewport.right + 1;
@@ -63,7 +118,7 @@
       card.hidden = !((selectedCategory === 'all' || card.dataset.category === selectedCategory) && searchable.toLowerCase().includes(query));
       if (!card.hidden) visible++;
     });
-    root.querySelector('#result-count').textContent = `${visible} ${visible === 1 ? 'منتج' : 'منتجات'}`;
+    root.querySelector('#result-count').textContent = `${visible} ${visible === 1 ? labels.product : labels.products}`;
     root.querySelector('#empty-state').hidden = visible > 0;
   }
 
@@ -78,10 +133,10 @@
     root.querySelector('#cart-total').textContent = money(total);
     root.querySelector('#cart-bar').hidden = count === 0;
     root.querySelector('.header-cart').setAttribute('aria-label', `فتح سلة الطلب: ${count} كرتونة، ${money(total)}`);
-    const summary = count ? `${count} كرتونة في الطلب. الإجمالي ${money(total)}` : 'الطلب فارغ';
+    const summary = count ? `${count} ${labels.cartonsInOrder}. ${labels.total} ${money(total)}` : labels.emptyOrder;
     root.querySelector('#cart-status').textContent = summary;
-    basket.querySelector('#basket-count').textContent = `${count} كرتونة`;
-    basket.querySelector('#basket-summary-count').textContent = `${count} كرتونة`;
+    basket.querySelector('#basket-count').textContent = `${count} ${labels.carton}`;
+    basket.querySelector('#basket-summary-count').textContent = `${count} ${labels.carton}`;
     basket.querySelector('#basket-total').textContent = money(total);
     basket.querySelector('#basket-empty').hidden = count > 0;
     basket.querySelector('.basket-order').hidden = count === 0;
@@ -94,8 +149,11 @@
   }
 
   function setVariantQuantity(variant, value) {
+    if (variant.dataset.available === 'false') return;
     const parsed = Number.parseInt(value, 10);
     const quantity = Number.isFinite(parsed) ? Math.max(0, Math.min(999, parsed)) : 0;
+    // Removing a focused stepper can emit change again during the same update.
+    if (quantity === quantityForVariant(variant)) return;
     if (quantity) quantities.set(variant, quantity);
     else quantities.delete(variant);
     const card = variant.closest('.product');
@@ -107,8 +165,9 @@
   function createStepper(label, getVariant) {
     const stepper = document.createElement('div');
     stepper.className = 'stepper';
-    stepper.innerHTML = '<button type="button">−</button><input type="number" min="0" max="999" step="1" inputmode="numeric"><button type="button">+</button>';
-    const [minus, plus] = stepper.querySelectorAll('button');
+    // .stepper explicitly uses direction: ltr, keeping + physically left in RTL.
+    stepper.innerHTML = '<button type="button">+</button><input type="number" min="0" max="999" step="1" inputmode="numeric"><button type="button">−</button>';
+    const [plus, minus] = stepper.querySelectorAll('button');
     const input = stepper.querySelector('input');
     minus.setAttribute('aria-label', `إنقاص كمية ${label}`);
     plus.setAttribute('aria-label', `زيادة كمية ${label}`);
@@ -136,11 +195,12 @@
         add.addEventListener('click', () => setVariantQuantity(selectedVariant(card), 1));
         if (previousFocus) add.focus({preventScroll:true});
       }
+      holder.querySelector('.add').disabled = selectedVariant(card).dataset.available === 'false';
       return;
     }
     if (!holder.querySelector('.stepper')) {
       holder.replaceChildren(createStepper(name, () => selectedVariant(card)));
-      if (previousFocus) holder.querySelector('button:last-child').focus({preventScroll:true});
+      if (previousFocus) holder.querySelector('button:first-child').focus({preventScroll:true});
     }
     const input = holder.querySelector('input');
     if (input.value !== String(quantity)) input.value = quantity;
@@ -153,7 +213,10 @@
     row.className = 'basket-item';
     row.setAttribute('role', 'listitem');
     row.dataset.itemKey = `${cards.indexOf(card)}:${variant.dataset.code}:${variant.dataset.size}`;
-    row.innerHTML = '<div class="basket-item-top"><div class="basket-details"><h3></h3><div class="basket-variant"></div><p class="basket-meta"><span class="basket-pack"></span><br>الكود <bdi class="basket-sku"></bdi></p></div></div><div class="basket-line"><span><bdi class="basket-unit-price"></bdi> × <span class="basket-quantity"></span></span><strong>الإجمالي: <bdi class="basket-line-total"></bdi></strong></div><div class="basket-actions"><button class="basket-remove" type="button">حذف</button></div>';
+    row.innerHTML = '<div class="basket-item-top"><div class="basket-details"><h3></h3><div class="basket-variant"></div><p class="basket-meta"><span class="basket-pack"></span><br><span class="basket-code-label"></span> <bdi class="basket-sku"></bdi></p></div></div><div class="basket-line"><span><bdi class="basket-unit-price"></bdi> × <span class="basket-quantity"></span></span><strong><span class="basket-total-label"></span>: <bdi class="basket-line-total"></bdi></strong></div><div class="basket-actions"><button class="basket-remove" type="button"></button></div>';
+    row.querySelector('.basket-code-label').textContent = labels.code;
+    row.querySelector('.basket-total-label').textContent = labels.total;
+    row.querySelector('.basket-remove').textContent = labels.remove;
     row.querySelector('h3').textContent = name;
     row.querySelector('.basket-variant').textContent = variant.dataset.size;
     row.querySelector('.basket-pack').textContent = variant.dataset.pack;
@@ -243,7 +306,7 @@
     basket.querySelector('#basket-order-note').hidden = false;
   });
 
-  // Image paths live only on variant data-image attributes in index.html.
+  // Variant image paths come from data/catalog-data.js.
   // Keep the same visual container for missing, failed, and loaded images.
   function updateProductImage(card, button, container = card) {
     const photo = container.querySelector('.product-image');
@@ -266,6 +329,7 @@
     card.querySelector('.pack').textContent = button.dataset.pack;
     card.querySelector('.sku').textContent = button.dataset.code;
     card.querySelector('.price strong').textContent = money(Number(button.dataset.price));
+    card.querySelector('.stock').textContent = button.dataset.available === 'false' ? labels.unavailable : labels.available;
     updateProductImage(card, button);
     card.dataset.selectedSize = button.dataset.size;
     renderQuantity(card);
@@ -285,7 +349,7 @@
     selectedCategory = button.dataset.category;
     categoryButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
     const target = button.dataset.category === 'seeds' ? button.nextElementSibling : button;
-    target.scrollIntoView({behavior: reducedMotion.matches ? 'instant' : 'smooth', block:'nearest', inline:'nearest'});
+    (target || button).scrollIntoView({behavior: reducedMotion.matches ? 'instant' : 'smooth', block:'nearest', inline:'nearest'});
     filterProducts();
     scheduleCategoryNavigation();
   }));
