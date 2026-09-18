@@ -412,28 +412,109 @@
   </section>
 </div>
 
+<script src="data/catalog-data.js"></script>
 <script>
 (() => {
+  const catalog = window.catalogData || { settings:{ labels:{} }, categories:[], products:[] };
   const root = document.getElementById('saadah-mobile-ui');
-  const cards = [...root.querySelectorAll('.product')];
   const search = root.querySelector('#product-search');
   const categories = root.querySelector('.categories');
-  const categoryButtons = [...root.querySelectorAll('.category')];
+  const productGrid = root.querySelector('#product-grid');
   const resultCount = root.querySelector('#result-count');
   const empty = root.querySelector('#empty-state');
   const cartBar = root.querySelector('#cart-bar');
   const cartCount = root.querySelector('#cart-count');
-  const cartItems = root.querySelector('#cart-items');
-  const cartTotal = root.querySelector('#cart-total');
+  let cartItems = root.querySelector('#cart-items');
+  let cartTotal = root.querySelector('#cart-total');
   let selectedCategory = 'all';
+  let cards = [];
   const quantities = new Map([[0, 10]]);
+
+  function renderCategoryButtons() {
+    const items = [...(catalog.categories || [])];
+    categories.innerHTML = items.map(item => `
+      <button class="category cursor-interaction" type="button" data-category="${item.id}" aria-pressed="${item.id === selectedCategory ? 'true' : 'false'}">${item.name}</button>
+    `).join('');
+  }
+
+  function buildProductMarkup(product) {
+    const variants = product.variants && product.variants.length ? product.variants : [{
+      sku: '',
+      size: { value: 0, unit: 'غرام' },
+      unitsPerCarton: 1,
+      price: 0,
+      image: product.image || '',
+      available: product.available !== false,
+      packLabel: '',
+      sizeLabel: '',
+      searchText: product.searchText || product.name
+    }];
+    const primaryVariant = variants[0];
+    const packLabel = primaryVariant.packLabel || `${primaryVariant.unitsPerCarton || 1} × ${primaryVariant.size?.value || 0} ${primaryVariant.size?.unit || 'غرام'}`;
+    const sizeLabel = primaryVariant.sizeLabel || `${primaryVariant.size?.value || 0}${primaryVariant.size?.unit || 'غرام'}`;
+    const priceValue = Number(primaryVariant.price || 0).toFixed(2);
+    const imageSrc = primaryVariant.image || product.image || '';
+    const stockText = product.available === false || primaryVariant.available === false ? 'غير متوفر' : 'متوفر';
+    const buttonsMarkup = variants.map((variant, index) => {
+      const variantSize = variant.sizeLabel || `${variant.size?.value || 0}${variant.size?.unit || 'غرام'}`;
+      const variantPack = variant.packLabel || `${variant.unitsPerCarton || 1} × ${variant.size?.value || 0} ${variant.size?.unit || 'غرام'}`;
+      const variantPrice = Number(variant.price || 0).toFixed(2);
+      const variantImage = variant.image || imageSrc;
+      return `<button class="variant cursor-interaction" type="button" aria-pressed="${index === 0 ? 'true' : 'false'}" data-size="${variantSize}" data-pack="${variantPack}" data-code="${variant.sku || ''}" data-price="${variantPrice}" data-origin="82% 55%" data-image="${variantImage}">${variantSize}</button>`;
+    }).join('');
+
+    return `
+      <article class="product" data-category="${product.category || 'all'}" data-search="${(product.searchText || `${product.name} ${primaryVariant.sku || ''}`).trim()}">
+        <div class="visual"><span class="stock">${stockText}</span><img src="${imageSrc}" alt="عبوة ${product.name}" style="--photo-origin:82% 55%"></div>
+        <h3>${product.name}</h3>
+        <div class="meta"><span class="pack">${packLabel}</span><br>الكود <span class="sku">${primaryVariant.sku || ''}</span></div>
+        <div class="variants" aria-label="اختر حجم ${product.name}">${buttonsMarkup}</div>
+        <div class="price-row">
+          <div class="price"><strong>€${priceValue}</strong><small>لكرتونة</small></div>
+          <button class="add cursor-interaction" type="button" aria-label="إضافة المنتج">+</button>
+        </div>
+      </article>
+    `;
+  }
+
+  function renderProducts() {
+    productGrid.innerHTML = (catalog.products || []).map(buildProductMarkup).join('');
+    cards = [...productGrid.querySelectorAll('.product')];
+  }
+
+  function bindProductEvents() {
+    cards.forEach((card, index) => {
+      const addButton = card.querySelector('.add');
+      if (addButton) {
+        addButton.addEventListener('click', () => {
+          quantities.set(index, 1);
+          renderStepper(card, index);
+          updateCart();
+        });
+      }
+
+      const variantButtons = [...card.querySelectorAll('.variant')];
+      variantButtons.forEach(button => button.addEventListener('click', () => {
+        variantButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+        card.querySelector('.pack').textContent = button.dataset.pack;
+        card.querySelector('.sku').textContent = button.dataset.code;
+        card.querySelector('.price strong').textContent = `€${Number(button.dataset.price).toFixed(2)}`;
+        const photo = card.querySelector('.visual img');
+        photo.style.opacity = '0.35';
+        photo.src = button.dataset.image;
+        requestAnimationFrame(() => { photo.style.opacity = '1'; });
+        card.dataset.selectedSize = button.dataset.size;
+        updateCart();
+      }));
+    });
+  }
 
   function filterProducts() {
     const query = search.value.trim().toLowerCase();
     let visible = 0;
     cards.forEach(card => {
       const matchCategory = selectedCategory === 'all' || card.dataset.category === selectedCategory;
-      const matchQuery = !query || card.dataset.search.toLowerCase().includes(query);
+      const matchQuery = !query || (card.dataset.search || '').toLowerCase().includes(query);
       card.hidden = !(matchCategory && matchQuery);
       if (!card.hidden) visible++;
     });
@@ -457,7 +538,7 @@
     cards.forEach((card, index) => {
       const quantity = quantities.get(index) || 0;
       count += quantity;
-      total += quantity * Number(card.querySelector('.price strong').textContent.replace('€',''));
+      total += quantity * Number(card.querySelector('.price strong').textContent.replace('€', ''));
     });
     cartCount.textContent = count;
     cartItems.textContent = count;
@@ -484,9 +565,9 @@
       control = document.createElement('div'); control.className='stepper';
       control.innerHTML='<button type="button" class="cursor-interaction" aria-label="إنقاص الكمية">−</button><input type="number" min="0" max="999" inputmode="numeric" aria-label="عدد الكراتين"><button type="button" class="cursor-interaction" aria-label="زيادة الكمية">+</button>';
       row.appendChild(control);
-      const buttons = control.querySelectorAll('button');
-      buttons[0].addEventListener('click', () => { quantities.set(index, Math.max(0,(quantities.get(index)||0)-1)); renderStepper(card,index); updateCart(); });
-      buttons[1].addEventListener('click', () => { quantities.set(index, (quantities.get(index)||0)+1); renderStepper(card,index); updateCart(); });
+      const stepButtons = control.querySelectorAll('button');
+      stepButtons[0].addEventListener('click', () => { quantities.set(index, Math.max(0,(quantities.get(index)||0)-1)); renderStepper(card,index); updateCart(); });
+      stepButtons[1].addEventListener('click', () => { quantities.set(index, (quantities.get(index)||0)+1); renderStepper(card,index); updateCart(); });
       control.querySelector('input').addEventListener('input', event => {
         const value = Math.max(0, Math.min(999, Number.parseInt(event.target.value || '0', 10)));
         quantities.set(index, value);
@@ -497,33 +578,48 @@
     control.querySelector('input').value = quantity;
   }
 
-  cards.forEach((card,index) => card.querySelector('.add').addEventListener('click', () => {
-    quantities.set(index,1); renderStepper(card,index); updateCart();
-  }));
-  cards.forEach((card,index) => {
-    const variantButtons = [...card.querySelectorAll('.variant')];
-    variantButtons.forEach(button => button.addEventListener('click', () => {
-      variantButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
-      card.querySelector('.pack').textContent = button.dataset.pack;
-      card.querySelector('.sku').textContent = button.dataset.code;
-      card.querySelector('.price strong').textContent = `€${Number(button.dataset.price).toFixed(2)}`;
-      const photo = card.querySelector('.visual img');
-      photo.style.opacity = '0.35';
-      photo.src = button.dataset.image;
-      requestAnimationFrame(() => { photo.style.opacity = '1'; });
-      card.dataset.selectedSize = button.dataset.size;
-      updateCart();
+  function attachCategoryEvents() {
+    const categoryButtons = [...categories.querySelectorAll('.category')];
+    categoryButtons.forEach(button => button.addEventListener('click', () => {
+      selectedCategory = button.dataset.category;
+      categoryButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+      revealFollowingCategories(button);
+      filterProducts();
     }));
-  });
-  categoryButtons.forEach(button => button.addEventListener('click', () => {
-    selectedCategory = button.dataset.category;
-    categoryButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
-    revealFollowingCategories(button);
+  }
+
+  function initCatalog() {
+    const labels = catalog.settings && catalog.settings.labels ? catalog.settings.labels : {};
+    const sectionTitle = root.querySelector('.section-title');
+    if (sectionTitle && labels.chooseCategory) sectionTitle.textContent = labels.chooseCategory;
+    const featuredHeading = root.querySelector('.results-head h2');
+    if (featuredHeading && labels.featuredTitle) featuredHeading.textContent = labels.featuredTitle;
+    const emptyState = root.querySelector('#empty-state');
+    if (emptyState && labels.emptyResults) emptyState.textContent = labels.emptyResults;
+    const cartSummary = root.querySelector('.cart-info strong');
+    if (cartSummary && labels.basketTitle) cartSummary.innerHTML = '<span id="cart-items">0</span> ' + labels.basketTitle;
+    const cartMeta = root.querySelector('.cart-info small');
+    if (cartMeta && labels.basketTotal) cartMeta.innerHTML = labels.basketTotal + ' <span id="cart-total">€0.00</span>';
+    cartItems = root.querySelector('#cart-items');
+    cartTotal = root.querySelector('#cart-total');
+    const orderButton = root.querySelector('.order-btn');
+    if (orderButton && labels.sendWhatsApp) orderButton.innerHTML = '<i class="fa-brands fa-whatsapp" aria-hidden="true"></i> ' + labels.sendWhatsApp;
+    if (search && catalog.settings && catalog.settings.labels && catalog.settings.labels.searchPlaceholder) {
+      search.placeholder = catalog.settings.labels.searchPlaceholder;
+    }
+    if (catalog.categories && catalog.categories.length) {
+      renderCategoryButtons();
+      attachCategoryEvents();
+    }
+    renderProducts();
+    bindProductEvents();
+    cards.forEach((card, index) => renderStepper(card, index));
+    search.addEventListener('input', filterProducts);
+    updateCart();
     filterProducts();
-  }));
-  search.addEventListener('input', filterProducts);
-  renderStepper(cards[0], 0);
-  updateCart();
+  }
+
+  initCatalog();
 })();
 </script>
 </body>
