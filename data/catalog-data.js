@@ -2,14 +2,14 @@
 // Images: use a normal relative path, or leave empty for the existing placeholder.
 // Availability defaults to true; false prevents adding the product/variant.
 // featured is editorial metadata; the current grid continues to show all products.
-// whatsappNumber is reserved for future activation; sending remains disabled.
+// whatsappNumber: international digits only (no +, spaces or hyphens). Blank disables handoff.
 window.catalogData = {
   "settings": {
     "brandName": "ADLA FOOD",
     "subtitle": "كتالوغ الطلب المباشر",
     "pageTitle": "ADLA FOOD — كتالوج الطلب المباشر",
     "logo": "assets/logo/adla-food.png",
-    "whatsappNumber": "",
+    "whatsappNumber": "436609243210",
     "currency": "€",
     "labels": {
       "searchPlaceholder": "ابحث باسم المنتج أو الكود",
@@ -31,7 +31,29 @@ window.catalogData = {
       "emptyOrder": "الطلب فارغ",
       "emptyBasket": "السلة فارغة",
       "emptyBasketHint": "أضف بعض المنتجات للبدء بالطلب",
-      "orderNote": "إرسال الطلب غير مفعّل في النسخة التجريبية. لم يتم إرسال أي طلب.",
+      "orderDetailsTitle": "بيانات الطلب",
+      "marketNameLabel": "اسم الماركت",
+      "marketNamePlaceholder": "الشام ماركت",
+      "marketNameRequired": "يرجى إدخال اسم الماركت",
+      "orderNoteLabel": "ملاحظة على الطلب",
+      "orderNotePlaceholder": "يرجى التوصيل بعد الساعة 14:00",
+      "continueOrder": "متابعة وإرسال الطلب",
+      "orderReady": "جاهز للإرسال",
+      "openWhatsApp": "فتح واتساب وإرسال الطلب",
+      "backToOrder": "رجوع",
+      "closeOrder": "إغلاق بيانات الطلب",
+      "orderIdLabel": "رقم الطلب",
+      "orderDateLabel": "التاريخ",
+      "marketLabel": "الماركت",
+      "orderDetailsLabel": "تفاصيل الطلب",
+      "totalCartonsLabel": "إجمالي الكراتين",
+      "orderTotalLabel": "إجمالي الطلب",
+      "whatsappNumberMissing": "رقم واتساب الطلبات غير محدد حاليًا.",
+      "whatsappNumberInvalid": "يرجى ضبط رقم واتساب الطلبات بأرقام دولية فقط.",
+      "newOrderLabel": "طلب جديد",
+      "quantityLabel": "الكمية",
+      "lineTotalLabel": "المجموع",
+      "unitsPerCartonLabel": "عدد الوحدات في الكرتونة",
       "product": "منتج",
       "products": "منتجات"
     },

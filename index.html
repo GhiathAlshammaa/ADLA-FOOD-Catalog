@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
 <title></title>
+<link rel="icon" href="assets/logo/adla-food.png" type="image/png">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/layout.css">
@@ -56,7 +57,7 @@
         <button class="cart-info basket-trigger" type="button" aria-label="مراجعة سلة الطلب" aria-controls="basket" aria-haspopup="dialog"><strong><span id="cart-items">0</span> <span data-label="cartonsInOrder"></span></strong><small><span data-label="total"></span>: <span id="cart-total"></span></small></button>
         <button class="order-btn" type="button"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M21 11.5a9 9 0 0 1-13 8L3 21l1.5-5A9 9 0 1 1 21 11.5Z"/><path d="M8 9h8m-8 4h5"/></svg><span data-label="sendWhatsAppShort"></span></button>
       </div>
-    <p class="order-note" id="order-note" hidden data-label="orderNote"></p>
+    <p class="order-note" id="order-note" role="status" hidden></p>
       <p class="sr-only" id="cart-status" role="status" aria-atomic="true"></p>
     </main>
   </section>
@@ -77,11 +78,41 @@
   <footer class="basket-footer">
     <div class="basket-summary"><span id="basket-summary-count"></span><strong><span data-label="total"></span>: <bdi id="basket-total"></bdi></strong></div>
     <button class="order-btn basket-order" type="button" hidden data-label="sendWhatsApp"></button>
-    <p class="order-note" id="basket-order-note" role="status" hidden data-label="orderNote"></p>
+    <p class="order-note" id="basket-order-note" role="status" hidden></p>
   </footer>
   <p class="sr-only" id="basket-status" role="status" aria-atomic="true"></p>
 </dialog>
+<dialog class="basket order-dialog" id="order-dialog" aria-labelledby="order-title">
+  <header class="basket-header">
+    <h2 id="order-title" data-label="orderDetailsTitle"></h2>
+    <button class="basket-close order-close" type="button">×</button>
+  </header>
+  <div class="basket-body">
+    <form id="order-form" novalidate>
+      <label for="market-name"><span data-label="marketNameLabel"></span> *</label>
+      <input id="market-name" name="marketName" required autocomplete="organization" aria-describedby="market-error">
+      <p id="market-error" class="order-note" role="alert" hidden></p>
+      <label for="customer-note" data-label="orderNoteLabel"></label>
+      <textarea id="customer-note" name="note" rows="3"></textarea>
+      <button class="order-btn" type="submit" data-label="continueOrder"></button>
+    </form>
+    <div id="order-review" hidden>
+      <dl>
+        <dt data-label="orderIdLabel"></dt><dd><bdi id="review-id"></bdi></dd>
+        <dt data-label="orderDateLabel"></dt><dd><bdi id="review-date"></bdi></dd>
+        <dt data-label="marketLabel"></dt><dd id="review-market"></dd>
+        <dt data-label="totalCartonsLabel"></dt><dd id="review-count"></dd>
+        <dt data-label="orderTotalLabel"></dt><dd><bdi id="review-total"></bdi></dd>
+      </dl>
+      <p id="review-note" hidden></p>
+      <button class="order-btn" id="open-whatsapp" type="button" data-label="openWhatsApp"></button>
+      <button class="basket-remove" id="back-to-order" type="button" data-label="backToOrder"></button>
+    </div>
+    <p id="order-error" class="order-note" role="alert" hidden></p>
+  </div>
+</dialog>
 <script src="data/catalog-data.js" defer></script>
+<script src="js/order.js" defer></script>
 <script src="js/app.js" defer></script>
 </body>
 </html>

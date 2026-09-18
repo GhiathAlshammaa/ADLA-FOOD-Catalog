@@ -302,8 +302,107 @@
     const trigger = basketTrigger?.getClientRects().length ? basketTrigger : root.querySelector('.header-cart');
     trigger.focus({preventScroll:true});
   });
-  basket.querySelector('.basket-order').addEventListener('click', () => {
-    basket.querySelector('#basket-order-note').hidden = false;
+  basket.querySelector('.basket-order').addEventListener('click', openOrderDetails);
+
+  const orderDialog = document.querySelector('#order-dialog');
+  const orderForm = document.querySelector('#order-form');
+  const marketInput = document.querySelector('#market-name');
+  const noteInput = document.querySelector('#customer-note');
+  const marketError = document.querySelector('#market-error');
+  const orderError = document.querySelector('#order-error');
+  const orderReview = document.querySelector('#order-review');
+  let orderTrigger = null;
+  let pendingOrder = null; // Confirmed snapshot only, never a second editable cart.
+  marketInput.placeholder = labels.marketNamePlaceholder;
+  noteInput.placeholder = labels.orderNotePlaceholder;
+  orderDialog.querySelector('.order-close').setAttribute('aria-label', labels.closeOrder);
+
+  function openOrderDetails(event) {
+    if (!quantities.size) {
+      const message = basket.open ? basket.querySelector('#basket-order-note') : root.querySelector('#order-note');
+      message.textContent = labels.emptyBasket;
+      message.hidden = false;
+      return;
+    }
+    orderTrigger = event.currentTarget;
+    showOrderForm();
+    orderDialog.showModal();
+    marketInput.focus();
+  }
+
+  function showOrderForm() {
+    pendingOrder = null;
+    orderForm.hidden = false;
+    orderReview.hidden = true;
+    marketError.hidden = orderError.hidden = true;
+    marketInput.removeAttribute('aria-invalid');
+    document.querySelector('#order-title').textContent = labels.orderDetailsTitle;
+  }
+
+  orderForm.addEventListener('submit', event => {
+    event.preventDefault();
+    if (!marketInput.value.trim()) {
+      marketError.textContent = labels.marketNameRequired;
+      marketError.hidden = false;
+      marketInput.setAttribute('aria-invalid', 'true');
+      marketInput.focus();
+      return;
+    }
+    if (!quantities.size) {
+      orderError.textContent = labels.emptyBasket;
+      orderError.hidden = false;
+      return;
+    }
+    // Read the existing synchronized quantities; obtain business metadata from the catalog.
+    const items = [...quantities].map(([element, quantity]) => {
+      const card = element.closest('.product');
+      const product = products.find(item => item.id === card.dataset.productId);
+      const variant = product.variants[[...card.querySelectorAll('.variant')].indexOf(element)];
+      return {
+        productId: product.id, productName: product.name, sku: variant.sku,
+        variantLabel: `${variant.size.value}${variant.size.unit}`,
+        unitsPerCarton: variant.unitsPerCarton, quantity, unitPrice: variant.price
+      };
+    });
+    pendingOrder = window.orderTools.createOrder({ marketName: marketInput.value, note: noteInput.value, items, currency: settings.currency });
+    // A future saveOrder(pendingOrder) can consume this snapshot without changing the cart or formatter.
+    const values = { id: pendingOrder.id, date: pendingOrder.createdAt, market: pendingOrder.marketName,
+      count: pendingOrder.totalCartons, total: `${pendingOrder.currency}${pendingOrder.totalAmount.toFixed(2)}`, note: pendingOrder.note };
+    Object.entries(values).forEach(([key, value]) => { document.querySelector(`#review-${key}`).textContent = value; });
+    document.querySelector('#review-note').hidden = !pendingOrder.note;
+    orderForm.hidden = true;
+    orderReview.hidden = false;
+    orderError.hidden = true;
+    document.querySelector('#order-title').textContent = labels.orderReady;
+    document.querySelector('#open-whatsapp').focus();
+  });
+
+  function openWhatsApp(order) {
+    const number = settings.whatsappNumber;
+    if (!number || !/^[1-9]\d*$/.test(number)) {
+      orderError.textContent = !number ? labels.whatsappNumberMissing : labels.whatsappNumberInvalid;
+      orderError.hidden = false;
+      return;
+    }
+    const message = window.orderTools.formatWhatsAppMessage(order, labels, settings.brandName);
+    // Synchronous user gesture; WhatsApp still requires the user to send the message.
+    window.open(`https://wa.me/${number}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
+  }
+  document.querySelector('#open-whatsapp').addEventListener('click', () => {
+    if (pendingOrder) openWhatsApp(pendingOrder);
+  });
+  document.querySelector('#back-to-order').addEventListener('click', () => { showOrderForm(); marketInput.focus(); });
+  orderDialog.querySelector('.order-close').addEventListener('click', () => orderDialog.close());
+  orderDialog.addEventListener('close', () => {
+    pendingOrder = null;
+    orderTrigger?.focus({ preventScroll: true });
+  });
+  orderDialog.addEventListener('keydown', event => {
+    if (event.key !== 'Tab') return;
+    const controls = [...orderDialog.querySelectorAll('button, input, textarea')].filter(control => control.getClientRects().length);
+    const first = controls[0], last = controls[controls.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
   });
 
   // Variant image paths come from data/catalog-data.js.
@@ -355,12 +454,7 @@
   }));
   root.querySelector('.header-cart').addEventListener('click', openBasket);
   root.querySelector('.basket-trigger').addEventListener('click', openBasket);
-  root.querySelector('.order-btn').addEventListener('click', () => {
-    const note = root.querySelector('#order-note');
-    note.hidden = false;
-    note.setAttribute('tabindex', '-1');
-    note.focus();
-  });
+  root.querySelector('.order-btn').addEventListener('click', openOrderDetails);
   search.addEventListener('input', filterProducts);
   filterProducts();
   updateCart();
