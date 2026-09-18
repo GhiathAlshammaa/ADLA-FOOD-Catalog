@@ -4,6 +4,16 @@
   const { settings, categories, products } = window.catalogData;
   const labels = settings.labels;
   const money = value => `${settings.currency}${value.toFixed(2)}`;
+  const categoryNames = new Map(categories.map(category => [category.id, category.name]));
+  function variantLabel(product, variant) {
+    const size = `${variant.size.value}${variant.size.unit}`;
+    const sameSize = product.variants.filter(item => item.size.value === variant.size.value && item.size.unit === variant.size.unit);
+    if (sameSize.length === 1) return size;
+    const pack = `${variant.unitsPerCarton} × ${size}`;
+    // Keep identically sized/packed source rows separately selectable by their SKU.
+    return sameSize.some(item => item !== variant && item.unitsPerCarton === variant.unitsPerCarton)
+      ? `${pack} · ${variant.sku}` : pack;
+  }
   const escapeHtml = value => String(value).replace(/[&<>"']/g, character => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   })[character]);
@@ -39,14 +49,16 @@
 
   function renderProducts() {
     root.querySelector('#product-grid').innerHTML = products.map(product => `
-        <article class="product" data-product-id="${escapeHtml(product.id)}" data-category="${escapeHtml(product.category)}" data-search="${escapeHtml([product.name, ...(product.searchTerms || [])].join(' '))}">
+        <article class="product" data-product-id="${escapeHtml(product.id)}" data-category="${escapeHtml(product.category)}" data-search="${escapeHtml([product.name, categoryNames.get(product.category), product.category, ...(product.searchTerms || []), ...product.variants.map(variant => `${variant.sku} ${variant.size.value}${variant.size.unit}`)].join(' ').toLowerCase())}">
           <div class="visual"><span class="stock"></span><img class="product-image" alt="" hidden><div class="image-placeholder" role="img" aria-label="${escapeHtml(labels.imageUnavailable)}"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m24 6 16 9-16 9-16-9 16-9Zm-16 9v18l16 9 16-9V15M24 24v18M16 10l16 9"/></svg><span>${escapeHtml(labels.imageUnavailable)}</span></div></div>
           <h3>${escapeHtml(product.name)}</h3>
           <div class="variants" role="group" aria-label="اختر حجم ${escapeHtml(product.name)}">
             ${product.variants.map((variant, index) => {
-              const size = `${variant.size.value}${variant.size.unit}`;
-              const pack = `${variant.unitsPerCarton} × ${variant.size.value} ${settings.unitNames[variant.size.unit] || variant.size.unit}`;
-              return `<button class="variant" type="button" aria-pressed="${index === 0}" data-size="${escapeHtml(size)}" data-pack="${escapeHtml(pack)}" data-code="${escapeHtml(variant.sku)}" data-price="${escapeHtml(variant.price)}" data-image="${escapeHtml(variant.image || '')}" data-available="${product.available !== false && variant.available !== false}">${escapeHtml(size)}</button>`;
+              const size = variantLabel(product, variant);
+              const weight = `${variant.size.value} ${settings.unitNames[variant.size.unit] || variant.size.unit}`;
+              const pack = variant.priceUnit === 'kg' ? `${weight} · ${labels.kgPrice}`
+                : `${variant.unitsPerCarton} × ${weight}${variant.packageType ? ` · ${variant.packageType}` : ''}`;
+              return `<button class="variant" type="button" aria-pressed="${index === 0}" data-size="${escapeHtml(size)}" data-pack="${escapeHtml(pack)}" data-code="${escapeHtml(variant.sku)}" data-price="${escapeHtml(variant.price)}" data-price-unit="${escapeHtml(variant.priceUnit || '')}" data-image="${escapeHtml(variant.image || '')}" data-available="${product.available !== false && variant.available !== false}">${escapeHtml(variant.sizeLabel || `${variant.size.value}${variant.size.unit}`)}</button>`;
             }).join('\n')}
           </div>
           <div class="meta"><span class="pack"></span><br>${escapeHtml(labels.code)} <span class="sku"></span></div>
@@ -114,8 +126,7 @@
     const query = search.value.trim().toLowerCase();
     let visible = 0;
     cards.forEach(card => {
-      const searchable = `${card.dataset.search} ${[...card.querySelectorAll('.variant')].map(button => button.dataset.code).join(' ')}`;
-      card.hidden = !((selectedCategory === 'all' || card.dataset.category === selectedCategory) && searchable.toLowerCase().includes(query));
+      card.hidden = !((selectedCategory === 'all' || card.dataset.category === selectedCategory) && card.dataset.search.includes(query));
       if (!card.hidden) visible++;
     });
     root.querySelector('#result-count').textContent = `${visible} ${visible === 1 ? labels.product : labels.products}`;
@@ -124,6 +135,11 @@
 
   function updateCart() {
     let count = 0, total = 0;
+    const hasKg = [...quantities.keys()].some(variant => variant.dataset.priceUnit === 'kg');
+    const countUnit = hasKg ? labels.orderUnits : labels.carton;
+    const countLabel = hasKg ? labels.orderUnitsInOrder : labels.cartonsInOrder;
+    root.querySelector('[data-label="cartonsInOrder"]').textContent = countLabel;
+    orderDialog.querySelector('[data-label="totalCartonsLabel"]').textContent = hasKg ? labels.totalOrderUnitsLabel : labels.totalCartonsLabel;
     quantities.forEach((quantity, variant) => {
       count += quantity;
       total += quantity * Number(variant.dataset.price);
@@ -132,11 +148,11 @@
     root.querySelector('#cart-items').textContent = count;
     root.querySelector('#cart-total').textContent = money(total);
     root.querySelector('#cart-bar').hidden = count === 0;
-    root.querySelector('.header-cart').setAttribute('aria-label', `فتح سلة الطلب: ${count} كرتونة، ${money(total)}`);
-    const summary = count ? `${count} ${labels.cartonsInOrder}. ${labels.total} ${money(total)}` : labels.emptyOrder;
+    root.querySelector('.header-cart').setAttribute('aria-label', `فتح سلة الطلب: ${count} ${countUnit}، ${money(total)}`);
+    const summary = count ? `${count} ${countLabel}. ${labels.total} ${money(total)}` : labels.emptyOrder;
     root.querySelector('#cart-status').textContent = summary;
-    basket.querySelector('#basket-count').textContent = `${count} ${labels.carton}`;
-    basket.querySelector('#basket-summary-count').textContent = `${count} ${labels.carton}`;
+    basket.querySelector('#basket-count').textContent = `${count} ${countUnit}`;
+    basket.querySelector('#basket-summary-count').textContent = `${count} ${countUnit}`;
     basket.querySelector('#basket-total').textContent = money(total);
     basket.querySelector('#basket-empty').hidden = count > 0;
     basket.querySelector('.basket-order').hidden = count === 0;
@@ -171,7 +187,7 @@
     const input = stepper.querySelector('input');
     minus.setAttribute('aria-label', `إنقاص كمية ${label}`);
     plus.setAttribute('aria-label', `زيادة كمية ${label}`);
-    input.setAttribute('aria-label', `عدد كراتين ${label}`);
+    input.setAttribute('aria-label', `${getVariant().dataset.priceUnit === 'kg' ? 'الكمية بالكيلوغرام' : 'عدد كراتين'} ${label}`);
     minus.addEventListener('click', () => setVariantQuantity(getVariant(), quantityForVariant(getVariant()) - 1));
     plus.addEventListener('click', () => setVariantQuantity(getVariant(), quantityForVariant(getVariant()) + 1));
     input.addEventListener('input', () => {
@@ -203,6 +219,7 @@
       if (previousFocus) holder.querySelector('button:first-child').focus({preventScroll:true});
     }
     const input = holder.querySelector('input');
+    input.setAttribute('aria-label', `${selectedVariant(card).dataset.priceUnit === 'kg' ? 'الكمية بالكيلوغرام' : 'عدد كراتين'} ${name}`);
     if (input.value !== String(quantity)) input.value = quantity;
   }
 
@@ -221,7 +238,7 @@
     row.querySelector('.basket-variant').textContent = variant.dataset.size;
     row.querySelector('.basket-pack').textContent = variant.dataset.pack;
     row.querySelector('.basket-sku').textContent = variant.dataset.code;
-    row.querySelector('.basket-unit-price').textContent = money(Number(variant.dataset.price));
+    row.querySelector('.basket-unit-price').textContent = `${money(Number(variant.dataset.price))}${variant.dataset.priceUnit === 'kg' ? ` / ${labels.kg}` : ''}`;
     const visual = card.querySelector('.visual').cloneNode(true);
     visual.querySelector('.stock')?.remove();
     row.querySelector('.basket-item-top').prepend(visual);
@@ -360,14 +377,15 @@
       const variant = product.variants[[...card.querySelectorAll('.variant')].indexOf(element)];
       return {
         productId: product.id, productName: product.name, sku: variant.sku,
-        variantLabel: `${variant.size.value}${variant.size.unit}`,
-        unitsPerCarton: variant.unitsPerCarton, quantity, unitPrice: variant.price
+        variantLabel: variantLabel(product, variant),
+        unitsPerCarton: variant.unitsPerCarton, quantity, unitPrice: variant.price,
+        ...(variant.priceUnit ? { priceUnit: variant.priceUnit } : {})
       };
     });
     pendingOrder = window.orderTools.createOrder({ marketName: marketInput.value, note: noteInput.value, items, currency: settings.currency });
     // A future saveOrder(pendingOrder) can consume this snapshot without changing the cart or formatter.
     const values = { id: pendingOrder.id, date: pendingOrder.createdAt, market: pendingOrder.marketName,
-      count: pendingOrder.totalCartons, total: `${pendingOrder.currency}${pendingOrder.totalAmount.toFixed(2)}`, note: pendingOrder.note };
+      count: pendingOrder.totalOrderUnits ?? pendingOrder.totalCartons, total: `${pendingOrder.currency}${pendingOrder.totalAmount.toFixed(2)}`, note: pendingOrder.note };
     Object.entries(values).forEach(([key, value]) => { document.querySelector(`#review-${key}`).textContent = value; });
     document.querySelector('#review-note').hidden = !pendingOrder.note;
     orderForm.hidden = true;
@@ -428,6 +446,7 @@
     card.querySelector('.pack').textContent = button.dataset.pack;
     card.querySelector('.sku').textContent = button.dataset.code;
     card.querySelector('.price strong').textContent = money(Number(button.dataset.price));
+    card.querySelector('.price small').textContent = button.dataset.priceUnit === 'kg' ? labels.kgPrice : labels.cartonPrice;
     card.querySelector('.stock').textContent = button.dataset.available === 'false' ? labels.unavailable : labels.available;
     updateProductImage(card, button);
     card.dataset.selectedSize = button.dataset.size;
@@ -458,4 +477,20 @@
   search.addEventListener('input', filterProducts);
   filterProducts();
   updateCart();
+
+  const backToTop = document.querySelector('.back-to-top');
+  const cartBar = root.querySelector('#cart-bar');
+  function updateBackToTop() {
+    backToTop.hidden = window.scrollY < 600;
+    const bar = cartBar.getBoundingClientRect();
+    const clearance = !cartBar.hidden && bar.bottom > 0 && bar.top < innerHeight
+      ? Math.max(16, innerHeight - bar.top + 12) : 16;
+    backToTop.style.setProperty('--back-to-top-bottom', `${clearance}px`);
+  }
+  backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: reducedMotion.matches ? 'instant' : 'smooth' }));
+  window.addEventListener('scroll', updateBackToTop, { passive: true });
+  window.addEventListener('resize', updateBackToTop);
+  new ResizeObserver(updateBackToTop).observe(cartBar);
+  new MutationObserver(updateBackToTop).observe(cartBar, { attributes: true, attributeFilter: ['hidden'] });
+  updateBackToTop();
 })();

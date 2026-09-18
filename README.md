@@ -24,14 +24,14 @@ Upload one clean standalone package image per variant into the appropriate folde
 | Product folder | Example filename |
 | --- | --- |
 | `assets/images/products/grape-leaves/` | `grape-leaves-660g.webp` |
-| `assets/images/products/grape-leaves/` | `grape-leaves-1350g.webp` |
+| `assets/images/products/grape-leaves/` | `grape-leaves-1250g.webp` |
 | `assets/images/products/makdous/` | `makdous-1000g.webp` |
-| `assets/images/products/sesame-paste/` | `sesame-paste-1800g.webp` |
-| `assets/images/products/hot-pepper-paste/` | `hot-pepper-paste-660g.webp` |
+| `assets/images/products/tahini/` | `tahini-1800g.webp` |
+| `assets/images/products/pepper-paste/` | `pepper-paste-660g.webp` |
 
 A `pickled-peppers/` folder is also ready. Empty `.gitkeep` files intentionally retain these directories in Git; they are not images.
 
-Use lowercase English slugs, hyphens, and a size with unit; no spaces. Append the lowercase SKU only to resolve a filename collision, for example `grape-leaves-660g-p1-07.webp`.
+Use `assets/images/products/<product-slug>/<product-slug>-<size>.webp`, with lowercase English slugs and size units `g`, `kg`, or `ml`. Each variant's `expectedImage` documents its exact future path; it is never loaded by the UI. Same-size variants include the lowercase SKU to avoid collisions, for example `tahini-700g-p3-05.webp`. Upload the real photo, then copy `expectedImage` into `image`; no other code changes are needed. No fake image files are created.
 
 In `data/catalog-data.js`, change the matching variant's image field:
 
@@ -40,6 +40,26 @@ image: "assets/images/products/grape-leaves/grape-leaves-660g.webp"
 ```
 
 Do not change CSS or the initial product `<img>`. `updateProductImage()` in `js/app.js` handles both the initial selection and later variant switches. Empty, absent or failed paths show the reusable HTML/CSS package icon and Arabic label “صورة المنتج غير متوفرة”. The placeholder remains visible while a future image loads. Both states share the same fixed-height visual area, with contained, centered photography and consistent padding. There is no cropping, image-specific CSS or replacement photography.
+
+## Official catalog data
+
+Source: `ALSAADAH_Product_Price_List.pdf`, physical pages 2–13, all ten sections. The catalog contains **51 products, 76 unique SKUs and 14 categories including All**. Compared with the prototype: 46 products added, 62 net variant rows added, and 3 existing products extended (grape leaves, makdous and tahini). There are 63 newly represented unique codes because the prototype's 14 rows contained only 13 unique SKUs. All original category IDs remain; herbs, cooking flavors and condiments were added.
+
+Every variant records `sourcePage`, the printed price and, where readable, `packageType` and the printed `unitPrice` (never recomputed). Catalog `unitPrice` is the individual package price; order-item `unitPrice` retains its existing meaning of the ordered carton/1 kg price. `expectedImage` is documentation only.
+
+Bulk rows explicitly priced €/kg use `priceUnit: "kg"`, size 1 kg and one order unit (`unitsPerCarton: 1` normalizes ordering; it does not assert a physical carton). Quantities remain integer increments of the listed 1 kg. Cards, basket and messages label kilogram prices correctly. Mixed orders use the neutral “order units” summary. Carton-only snapshots keep their existing shape; kilogram items add `priceUnit`, and such orders add `totalKilograms` and `totalOrderUnits`. `totalCartons` counts actual cartons only. No HTML or CSS changes were needed.
+
+Source discrepancies retained or corrected deliberately:
+
+- Grape leaves: 660g is P1-02 at €22, and P1-03 is 1250g. P1-06–09 are turnips. The existing `pickled-peppers` ID now contains the source's Haurani peppers P2-12/13; turnips have their own product.
+- P3-05 is 8 × 700g tahini at €36; P3-07 is 12 × 700g at €50. P3-04 and P3-06 are identically described 350g packs: both SKUs are retained and shown in their selector labels.
+- P1-10 and P3-09 both say makdous, 12 × 660g, but cost €18 and €50 respectively. Both remain separate variants; no grade or recipe was invented.
+- Packaging cells for P2-11/12/13/14/15 contain unreadable box glyphs; `packageType` is omitted. P3-22's name has box glyphs around the readable words “فلافل” and “خلطة”; only those words are retained.
+- The source does not specify olive color, cumin form for P2-06, or further differences between identically described SKUs. These were not inferred; “كمون” stays separate from explicitly ground cumin. Missing bulk unit prices are omitted.
+
+Run the dependency-free catalog and order checks with `node --test tests/catalog.test.cjs`.
+
+Expansion QA: all five Node checks passed. Bundled Playwright/Edge verified 375, 430, 768, 1024 and 1440px: all 51 cards and 76 variant selections, every category (including empty retained categories), category arrows, Arabic/category/SKU/size search, placeholders, add/remove, card ↔ basket quantity synchronization, carton and mixed-kilogram totals, required market name, optional note, order snapshots and encoded WhatsApp messages. No console/page errors or horizontal page overflow; screenshots reviewed at every width. WhatsApp handoff was intercepted without sending. HTML and CSS are unchanged. The browser QA script/results/screenshots are outside the repository in the Codex visualization directory.
 
 ## Responsive design
 
@@ -51,7 +71,7 @@ Do not change CSS or the initial product `<img>`. `updateProductImage()` in `js/
 
 ## Behavior and scope
 
-Variant controls and quantity/cart semantics remain unchanged. Each variant has its own quantity within its product, including when two products share a SKU. The card and basket use the same quantity state. Integers are limited to 0–999; committing zero restores the add control. Cart state is not persisted. Search covers Arabic product names, optional `searchTerms` and every variant SKU, combined with the selected category. Categories follow their `order` values.
+Each variant has its own quantity within its product. Catalog SKUs are globally unique. The card and basket use the same quantity state. Integers are limited to 0–999; committing zero restores the add control. Cart state is not persisted. Search derives Arabic names, category labels/IDs, optional `searchTerms`, sizes and every variant SKU from the catalog, combined with the selected category. Categories follow their `order` values.
 
 Edit names, categories, sizes, units per carton, prices, availability and image paths in `data/catalog-data.js`. Keep product IDs stable and give each product at least one variant. Set product or variant `available` to `false` to prevent adding it; omitted availability means available. `settings.unitNames` supplies long unit labels for pack information. `featured` is editorial metadata; the existing grid displays all products. `settings.labels` controls visible catalog labels; technical accessibility instructions remain in the application. `settings.whatsappNumber` is the only WhatsApp recipient setting. Supply international digits without +, spaces or hyphens; it is currently blank, so handoff shows the missing-number message.
 
@@ -86,12 +106,12 @@ The serializable snapshot has exactly this shape (example values):
   marketName: "الشام ماركت",
   note: "",
   items: [{
-    productId: "grape-leaves", productName: "ورق عنب", sku: "P1-07",
+    productId: "grape-leaves", productName: "ورق عنب", sku: "P1-02",
     variantLabel: "660غ", unitsPerCarton: 12, quantity: 4,
-    unitPrice: 18, lineTotal: 72
+    unitPrice: 22, lineTotal: 88
   }],
   totalCartons: 4,
-  totalAmount: 72,
+  totalAmount: 88,
   currency: "€"
 }
 ```

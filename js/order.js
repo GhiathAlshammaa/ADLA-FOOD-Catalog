@@ -20,7 +20,11 @@ window.orderTools = (() => {
       marketName: marketName.trim(),
       note: note.trim(),
       items: normalizedItems,
-      totalCartons: normalizedItems.reduce((sum, item) => sum + item.quantity, 0),
+      totalCartons: normalizedItems.reduce((sum, item) => sum + (item.priceUnit === 'kg' ? 0 : item.quantity), 0),
+      ...(normalizedItems.some(item => item.priceUnit === 'kg') ? {
+        totalKilograms: normalizedItems.reduce((sum, item) => sum + (item.priceUnit === 'kg' ? item.quantity : 0), 0),
+        totalOrderUnits: normalizedItems.reduce((sum, item) => sum + item.quantity, 0)
+      } : {}),
       totalAmount: roundMoney(normalizedItems.reduce((sum, item) => sum + item.lineTotal, 0)),
       currency
     };
@@ -32,9 +36,9 @@ window.orderTools = (() => {
     const lines = order.items.map((item, index) => [
       `${index + 1}) ${item.productName} — ${item.variantLabel}`,
       `SKU: ${item.sku}`,
-      `${labels.unitsPerCartonLabel}: ${item.unitsPerCarton}`,
-      `${labels.quantityLabel}: ${item.quantity} ${labels.carton}`,
-      `${labels.cartonPrice}: ${money(item.unitPrice)}`,
+      ...(item.priceUnit === 'kg' ? [] : [`${labels.unitsPerCartonLabel}: ${item.unitsPerCarton}`]),
+      `${labels.quantityLabel}: ${item.quantity} ${item.priceUnit === 'kg' ? labels.kg : labels.carton}`,
+      `${item.priceUnit === 'kg' ? labels.kgPrice : labels.cartonPrice}: ${money(item.unitPrice)}`,
       `${labels.lineTotalLabel}: ${money(item.lineTotal)}`
     ].join('\n'));
     return [
@@ -42,7 +46,7 @@ window.orderTools = (() => {
       block(labels.orderIdLabel, order.id), block(labels.orderDateLabel, order.createdAt),
       block(labels.marketLabel, order.marketName), `${labels.orderDetailsLabel}\n────────────────`,
       ...lines,
-      `────────────────\n${labels.totalCartonsLabel}: ${order.totalCartons}\n${labels.orderTotalLabel}: ${money(order.totalAmount)}`,
+      `────────────────\n${order.totalOrderUnits === undefined ? labels.totalCartonsLabel : labels.totalOrderUnitsLabel}: ${order.totalOrderUnits ?? order.totalCartons}\n${labels.orderTotalLabel}: ${money(order.totalAmount)}`,
       ...(order.note ? [block(labels.orderNoteLabel, order.note)] : [])
     ].join('\n\n');
   }

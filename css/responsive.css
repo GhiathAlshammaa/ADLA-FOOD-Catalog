@@ -35,9 +35,3 @@
   .order-btn { inline-size: 100%; }
   .quantity-control { max-inline-size: 156px; }
 }
-
-@media (min-width: 600px) and (max-width: 1199px) {
-  /* Center a short last row without widening its cards; works after filtering. */
-  .product:nth-child(3n + 1 of :not([hidden])):nth-last-child(2 of :not([hidden])) { grid-column: 2 / span 2; }
-  .product:nth-child(3n + 1 of :not([hidden])):nth-last-child(1 of :not([hidden])) { grid-column: 3 / span 2; }
-}
